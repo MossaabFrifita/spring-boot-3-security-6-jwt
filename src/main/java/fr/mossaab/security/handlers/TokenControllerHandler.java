@@ -2,7 +2,7 @@ package fr.mossaab.security.handlers;
 
 
 import fr.mossaab.security.enums.Role;
-import fr.mossaab.security.exception.RefreshTokenException;
+import fr.mossaab.security.exception.TokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,14 +21,15 @@ import java.util.Map;
 @RestControllerAdvice
 public class TokenControllerHandler {
 
-    @ExceptionHandler(value = RefreshTokenException.class)
+    @ExceptionHandler(value = TokenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleRefreshTokenException(RefreshTokenException ex, WebRequest request){
+    public ResponseEntity<ErrorResponse> handleRefreshTokenException(TokenException ex, WebRequest request){
        final ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(Instant.now())
-                .statusCode(HttpStatus.FORBIDDEN.value())
+                .error("Invalid Token")
+                .status(HttpStatus.FORBIDDEN.value())
                 .message(ex.getMessage())
-                .description(request.getDescription(false))
+                .path(request.getDescription(false))
                 .build();
         return new ResponseEntity<>(errorResponse,HttpStatus.FORBIDDEN);
     }

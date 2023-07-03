@@ -3,7 +3,7 @@ package fr.mossaab.security.service.impl;
 import fr.mossaab.security.entities.RefreshToken;
 import fr.mossaab.security.entities.User;
 import fr.mossaab.security.enums.TokenType;
-import fr.mossaab.security.exception.RefreshTokenException;
+import fr.mossaab.security.exception.TokenException;
 import fr.mossaab.security.payload.request.RefreshTokenRequest;
 import fr.mossaab.security.payload.response.RefreshTokenResponse;
 import fr.mossaab.security.repository.RefreshTokenRepository;
@@ -49,11 +49,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public RefreshToken verifyExpiration(RefreshToken token) {
         if(token == null){
             log.error("Token is null");
-            throw new RefreshTokenException(null, "Token is null");
+            throw new TokenException(null, "Token is null");
         }
         if(token.getExpiryDate().compareTo(Instant.now()) < 0 ){
             refreshTokenRepository.delete(token);
-            throw new RefreshTokenException(token.getToken(), "Refresh token was expired. Please make a new authentication request");
+            throw new TokenException(token.getToken(), "Refresh token was expired. Please make a new authentication request");
         }
         return token;
     }
@@ -68,7 +68,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         User user = refreshTokenRepository.findByToken(request.getRefreshToken())
                 .map(this::verifyExpiration)
                 .map(RefreshToken::getUser)
-                .orElseThrow(() -> new RefreshTokenException(request.getRefreshToken(),"Refresh token does not exist"));
+                .orElseThrow(() -> new TokenException(request.getRefreshToken(),"Refresh token does not exist"));
 
         String token = jwtService.generateToken(user);
         return RefreshTokenResponse.builder()
