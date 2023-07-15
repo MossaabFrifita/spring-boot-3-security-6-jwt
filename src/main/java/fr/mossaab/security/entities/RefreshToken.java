@@ -1,6 +1,5 @@
 package fr.mossaab.security.entities;
 
-import fr.mossaab.security.enums.TokenType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,8 +30,5 @@ public class RefreshToken {
     private Instant expiryDate;
 
     public boolean revoked;
-
-    @Enumerated(EnumType.STRING)
-    private TokenType tokenType = TokenType.BEARER;
 
 }

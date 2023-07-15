@@ -36,7 +36,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public RefreshToken createRefreshToken(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         RefreshToken refreshToken = RefreshToken.builder()
-                .tokenType(TokenType.BEARER)
                 .revoked(false)
                 .user(user)
                 .token(Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes()))
