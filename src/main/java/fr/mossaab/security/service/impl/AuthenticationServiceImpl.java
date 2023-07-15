@@ -62,10 +62,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
 
         var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+        var roles = user.getRole().getAuthorities()
+                .stream()
+                .map(SimpleGrantedAuthority::getAuthority)
+                .toList();
         var jwt = jwtService.generateToken(user);
         var refreshToken = refreshTokenService.createRefreshToken(user.getId());
         return AuthenticationResponse.builder()
                 .accessToken(jwt)
+                .roles(roles)
                 .email(user.getEmail())
                 .id(user.getId())
                 .refreshToken(refreshToken.getToken())
