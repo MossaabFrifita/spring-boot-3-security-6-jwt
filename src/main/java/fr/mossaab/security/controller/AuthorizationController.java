@@ -5,23 +5,21 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/v1/resource")
+@RequestMapping("/api/v1")
 @PreAuthorize("hasAnyRole('ADMIN','USER')")
 @Tag(name = "Authorization", description = "The Authorization API. Contains a secure hello method")
 public class AuthorizationController {
 
 
 
-    @GetMapping
-    @PreAuthorize("hasAuthority('READ_PRIVILEGE')")
+    @GetMapping("/admin/resource")
+    @PreAuthorize("hasAuthority('READ_PRIVILEGE') and hasRole('ADMIN')")
     @Operation(
-            description = "This endpoint require a valid JWT, ADMIN or USER role with READ_PRIVILEGE",
+            description = "This endpoint require a valid JWT, ADMIN role with READ_PRIVILEGE",
             summary = "Hello secured endpoint",
             responses = {
                     @ApiResponse(
@@ -30,15 +28,28 @@ public class AuthorizationController {
                     ),
                     @ApiResponse(
                             description = "Unauthorized / Invalid Token",
-                            responseCode = "403"
+                            responseCode = "401"
                     )
             }
-
     )
-    public ResponseEntity<String> sayHello() {
-        return ResponseEntity.ok("Hello from secured endpoint with READ_PRIVILEGE AND USER OR ADMIN ROLE");
+    public ResponseEntity<String> sayHelloWithRoleAdminAndReadAuthority() {
+        return ResponseEntity.ok("Hello, you have access to a protected resource that requires admin role and read authority.");
     }
 
-
+    @DeleteMapping("/admin/resource")
+    @PreAuthorize("hasAuthority('DELETE_PRIVILEGE') and hasRole('ADMIN')")
+    public ResponseEntity<String> sayHelloWithRoleAdminAndDeleteAuthority() {
+        return ResponseEntity.ok("Hello, you have access to a protected resource that requires admin role and delete authority.");
+    }
+    @PostMapping("/user/resource")
+    @PreAuthorize("hasAuthority('CREATE_PRIVILEGE') and hasRole('USER')")
+    public ResponseEntity<String> sayHelloWithRoleUserAndCreateAuthority() {
+        return ResponseEntity.ok("Hello, you have access to a protected resource that requires user role and create authority.");
+    }
+    @PutMapping("/user/resource")
+    @PreAuthorize("hasAuthority('UPDATE_PRIVILEGE') and hasRole('USER')")
+    public ResponseEntity<String> sayHelloWithRoleUserAndUpdateAuthority() {
+        return ResponseEntity.ok("Hello, you have access to a protected resource that requires user role and update authority.");
+    }
 
 }
