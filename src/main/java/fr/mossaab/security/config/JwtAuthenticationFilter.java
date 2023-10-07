@@ -37,12 +37,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
            @NonNull HttpServletResponse response,
            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+
+        // try to get JWT in cookie or in Authorization Header
+        String jwt = jwtService.getJwtFromCookies(request);
         final String authHeader = request.getHeader("Authorization");
-        if(authHeader ==  null || !authHeader.startsWith("Bearer ")){
+
+        if((jwt == null && (authHeader ==  null || !authHeader.startsWith("Bearer "))) || request.getRequestURI().contains("/auth")){
             filterChain.doFilter(request, response);
             return;
         }
-        final String jwt = authHeader.substring(7); // after "Bearer "
+
+        // If the JWT is not in the cookies but in the "Authorization" header
+        if (jwt == null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7); // after "Bearer "
+        }
+
+
         final String userEmail =jwtService.extractUserName(jwt);
         /*
            SecurityContextHolder: is where Spring Security stores the details of who is authenticated.
