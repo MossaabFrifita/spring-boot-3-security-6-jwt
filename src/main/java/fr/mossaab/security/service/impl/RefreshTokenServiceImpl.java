@@ -11,10 +11,14 @@ import fr.mossaab.security.repository.UserRepository;
 import fr.mossaab.security.service.JwtService;
 import fr.mossaab.security.service.RefreshTokenService;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.WebUtils;
 
 import java.time.Instant;
 import java.util.Base64;
@@ -32,6 +36,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Value("${application.security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
+    @Value("${application.security.jwt.refresh-token.cookie-name}")
+    private String refreshTokenName;
     @Override
     public RefreshToken createRefreshToken(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
@@ -75,5 +81,25 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .refreshToken(request.getRefreshToken())
                 .tokenType(TokenType.BEARER.name())
                 .build();
+    }
+
+    @Override
+    public ResponseCookie generateRefreshTokenCookie(String token) {
+        return ResponseCookie.from(refreshTokenName, token)
+                .path("/")
+                .maxAge(refreshExpiration/1000) // 15 days in seconds
+                .httpOnly(true)
+                .sameSite("Strict")
+                .build();
+    }
+
+    @Override
+    public String getRefreshTokenFromCookies(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, refreshTokenName);
+        if (cookie != null) {
+            return cookie.getValue();
+        } else {
+            return "";
+        }
     }
 }

@@ -10,6 +10,7 @@ import fr.mossaab.security.service.JwtService;
 import fr.mossaab.security.service.RefreshTokenService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -41,8 +42,10 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.register(request);
         ResponseCookie jwtCookie = jwtService.generateJwtCookie(authenticationResponse.getAccessToken());
+        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(authenticationResponse.getRefreshToken());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE,refreshTokenCookie.toString())
                 .body(authenticationResponse);
     }
 
@@ -50,8 +53,10 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
         ResponseCookie jwtCookie = jwtService.generateJwtCookie(authenticationResponse.getAccessToken());
+        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(authenticationResponse.getRefreshToken());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE,refreshTokenCookie.toString())
                 .body(authenticationResponse);
     }
     @PostMapping("/refresh-token")
@@ -59,6 +64,16 @@ public class AuthenticationController {
         return ResponseEntity.ok(refreshTokenService.generateNewToken(request));
     }
 
+    @PostMapping("/refresh-token-cookie")
+    public ResponseEntity<?> refreshTokenCookie(HttpServletRequest request) {
+        String refreshToken = refreshTokenService.getRefreshTokenFromCookies(request);
+        RefreshTokenResponse refreshTokenResponse = refreshTokenService
+                .generateNewToken(new RefreshTokenRequest(refreshToken));
+        ResponseCookie NewJwtCookie = jwtService.generateJwtCookie(refreshTokenResponse.getAccessToken());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, NewJwtCookie.toString())
+                .body(null);
+    }
     @GetMapping("/info")
     public Authentication getAuthentication(@RequestBody AuthenticationRequest request){
         return     authenticationManager.authenticate(
