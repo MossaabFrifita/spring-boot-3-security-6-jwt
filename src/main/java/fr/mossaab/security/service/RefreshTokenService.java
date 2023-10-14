@@ -16,4 +16,6 @@ public interface RefreshTokenService {
     RefreshTokenResponse generateNewToken(RefreshTokenRequest request);
     ResponseCookie generateRefreshTokenCookie(String token);
     String getRefreshTokenFromCookies(HttpServletRequest request);
+    void deleteByToken(String token);
+    ResponseCookie getCleanRefreshTokenCookie();
 }

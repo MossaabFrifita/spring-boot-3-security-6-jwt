@@ -65,14 +65,14 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh-token-cookie")
-    public ResponseEntity<?> refreshTokenCookie(HttpServletRequest request) {
+    public ResponseEntity<Void> refreshTokenCookie(HttpServletRequest request) {
         String refreshToken = refreshTokenService.getRefreshTokenFromCookies(request);
         RefreshTokenResponse refreshTokenResponse = refreshTokenService
                 .generateNewToken(new RefreshTokenRequest(refreshToken));
         ResponseCookie NewJwtCookie = jwtService.generateJwtCookie(refreshTokenResponse.getAccessToken());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, NewJwtCookie.toString())
-                .body(null);
+                .build();
     }
     @GetMapping("/info")
     public Authentication getAuthentication(@RequestBody AuthenticationRequest request){
@@ -80,5 +80,18 @@ public class AuthenticationController {
                 new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request){
+        String refreshToken = refreshTokenService.getRefreshTokenFromCookies(request);
+        if(refreshToken != null) {
+           refreshTokenService.deleteByToken(refreshToken);
+        }
+        ResponseCookie jwtCookie = jwtService.getCleanJwtCookie();
+        ResponseCookie refreshTokenCookie = refreshTokenService.getCleanRefreshTokenCookie();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE,jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE,refreshTokenCookie.toString())
+                .build();
 
+    }
 }

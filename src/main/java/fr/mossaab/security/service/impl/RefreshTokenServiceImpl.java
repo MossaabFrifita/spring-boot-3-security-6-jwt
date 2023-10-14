@@ -89,6 +89,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .path("/")
                 .maxAge(refreshExpiration/1000) // 15 days in seconds
                 .httpOnly(true)
+                .secure(true)
                 .sameSite("Strict")
                 .build();
     }
@@ -101,5 +102,17 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         } else {
             return "";
         }
+    }
+
+    @Override
+    public void deleteByToken(String token) {
+        refreshTokenRepository.findByToken(token).ifPresent(refreshTokenRepository::delete);
+    }
+
+    @Override
+    public ResponseCookie getCleanRefreshTokenCookie() {
+        return ResponseCookie.from(refreshTokenName, "")
+                .path("/")
+                .build();
     }
 }

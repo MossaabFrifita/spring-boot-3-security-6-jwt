@@ -65,6 +65,7 @@ public class JwtServiceImpl implements JwtService {
                 .path("/")
                 .maxAge(24 * 60 * 60) // 24 hours
                 .httpOnly(true)
+                .secure(true)
                 .sameSite("Strict")
                 .build();
     }
@@ -77,6 +78,13 @@ public class JwtServiceImpl implements JwtService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from(jwtCookieName, "")
+                .path("/")
+                .build();
     }
 
     private String buildToken(
