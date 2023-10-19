@@ -16,7 +16,7 @@ public enum Role {
             Set.of(READ_PRIVILEGE,WRITE_PRIVILEGE,UPDATE_PRIVILEGE,DELETE_PRIVILEGE)
     ),
     USER(
-            Set.of(READ_PRIVILEGE)
+            Set.of(READ_PRIVILEGE,WRITE_PRIVILEGE)
     );
 
     @Getter
