@@ -8,6 +8,10 @@ import fr.mossaab.security.payload.response.RefreshTokenResponse;
 import fr.mossaab.security.service.AuthenticationService;
 import fr.mossaab.security.service.JwtService;
 import fr.mossaab.security.service.RefreshTokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -50,6 +55,19 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
+    @Operation(
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Unauthorized",
+                            responseCode = "401",
+                            content = {@Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = "application/json")}
+                    )
+            }
+    )
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         AuthenticationResponse authenticationResponse = authenticationService.authenticate(request);
         ResponseCookie jwtCookie = jwtService.generateJwtCookie(authenticationResponse.getAccessToken());

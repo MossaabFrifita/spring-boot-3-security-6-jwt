@@ -1,6 +1,10 @@
 package fr.mossaab.security.config;
 
 
+import fr.mossaab.security.handlers.ErrorResponse;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -9,6 +13,8 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
+import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -45,5 +51,11 @@ import org.springframework.context.annotation.Configuration;
 )
 
 public class OpenAPIConfiguration {
-
+        @Bean
+        public OpenApiCustomizer schemaCustomizer() {
+                ResolvedSchema resolvedSchema = ModelConverters.getInstance()
+                        .resolveAsResolvedSchema(new AnnotatedType(ErrorResponse.class));
+                return openApi -> openApi
+                        .schema(resolvedSchema.schema.getName(), resolvedSchema.schema);
+        }
 }
