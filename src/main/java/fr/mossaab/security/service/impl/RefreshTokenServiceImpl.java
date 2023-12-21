@@ -113,6 +113,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public ResponseCookie getCleanRefreshTokenCookie() {
         return ResponseCookie.from(refreshTokenName, "")
                 .path("/")
+                .httpOnly(true)
+                .maxAge(0)
                 .build();
     }
 }
