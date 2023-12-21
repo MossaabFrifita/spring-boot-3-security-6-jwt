@@ -84,6 +84,8 @@ public class JwtServiceImpl implements JwtService {
     public ResponseCookie getCleanJwtCookie() {
         return ResponseCookie.from(jwtCookieName, "")
                 .path("/")
+                .httpOnly(true)
+                .maxAge(0)
                 .build();
     }
 
